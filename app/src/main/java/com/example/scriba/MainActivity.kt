@@ -20,6 +20,9 @@ import androidx.compose.ui.unit.dp
 import com.example.scriba.ui.theme.ScribaTheme
 import androidx.navigation.compose.*
 import android.util.Log
+import androidx.lifecycle.ViewModel
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 
 const val ROUTE_NOTES = "note_list"
 const val ROUTE_ADD = "add_note"
@@ -36,6 +39,21 @@ val sampleNotes = listOf(
     Note(3, "Ideas", "Note-taking app with voice input and tagging.")
 )
 
+class NotesViewModel : ViewModel() {
+    private val _notes = mutableStateListOf(
+        Note(1, "Meeting Notes", "Discuss project timeline and goals."),
+        Note(2, "Shopping List", "Milk, Eggs, Bread, Coffee."),
+        Note(3, "Ideas", "Note-taking app with voice input and tagging.")
+    )
+
+    val notes: SnapshotStateList<Note> = _notes
+
+    fun addNote(note: Note) {
+        val newId = (notes.maxOfOrNull { it.id } ?: 0) + 1
+        _notes.add(note.copy(id = newId))
+    }
+}
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,6 +61,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             ScribaTheme {
                 val navController = rememberNavController()
+                val viewModel = remember { NotesViewModel() }
                 NavHost(navController = navController, startDestination = ROUTE_NOTES) {
                     composable(ROUTE_NOTES) {
                         Scaffold(
@@ -58,14 +77,14 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                         ) { innerPadding ->
-                            NoteList(notes = sampleNotes, modifier = Modifier.padding(innerPadding))
+                            NoteList(notes = viewModel.notes, modifier = Modifier.padding(innerPadding))
                         }
                     }
 
                     composable(ROUTE_ADD) {
                         AddNoteScreen(
                             onSave = { note ->
-                                Log.d("AddNote", "Saved: $note")
+                                viewModel.addNote(note)
                                 navController.popBackStack()
                             },
                             onCancel = {
