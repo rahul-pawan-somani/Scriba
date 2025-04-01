@@ -12,13 +12,17 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.runtime.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.scriba.ui.theme.ScribaTheme
+import androidx.navigation.compose.*
+import android.util.Log
 
-
+const val ROUTE_NOTES = "note_list"
+const val ROUTE_ADD = "add_note"
 
 data class Note(
     val id: Int,
@@ -38,18 +42,37 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ScribaTheme {
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    floatingActionButton = {
-                        FloatingActionButton(onClick = { /* TODO: Navigate to add note screen */ }) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = "Add Note"
-                            )
+                val navController = rememberNavController()
+                NavHost(navController = navController, startDestination = ROUTE_NOTES) {
+                    composable(ROUTE_NOTES) {
+                        Scaffold(
+                            modifier = Modifier.fillMaxSize(),
+                            floatingActionButton = {
+                                FloatingActionButton(onClick = {
+                                    navController.navigate(ROUTE_ADD)
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Add,
+                                        contentDescription = "Add Note"
+                                    )
+                                }
+                            }
+                        ) { innerPadding ->
+                            NoteList(notes = sampleNotes, modifier = Modifier.padding(innerPadding))
                         }
                     }
-                ) { innerPadding ->
-                    NoteList(notes = sampleNotes, modifier = Modifier.padding(innerPadding))
+
+                    composable(ROUTE_ADD) {
+                        AddNoteScreen(
+                            onSave = { note ->
+                                Log.d("AddNote", "Saved: $note")
+                                navController.popBackStack()
+                            },
+                            onCancel = {
+                                navController.popBackStack()
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -77,6 +100,58 @@ fun NoteCard(note: Note) {
             Text(text = note.title, style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(4.dp))
             Text(text = note.content, style = MaterialTheme.typography.bodyMedium)
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddNoteScreen(onSave: (Note) -> Unit, onCancel: () -> Unit) {
+    var title by remember { mutableStateOf("") }
+    var content by remember { mutableStateOf("") }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(title = { Text("Add Note") })
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(16.dp)
+        ) {
+            OutlinedTextField(
+                value = title,
+                onValueChange = { title = it },
+                label = { Text("Title") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            OutlinedTextField(
+                value = content,
+                onValueChange = { content = it },
+                label = { Text("Content") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(150.dp),
+                maxLines = 10
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            Row {
+                Button(onClick = {
+                    if (title.isNotBlank() && content.isNotBlank()) {
+                        val newNote = Note(id = 0, title = title, content = content)
+                        onSave(newNote)
+                    }
+                }) {
+                    Text("Save")
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                OutlinedButton(onClick = onCancel) {
+                    Text("Cancel")
+                }
+            }
         }
     }
 }
