@@ -2,8 +2,8 @@ package com.example.scriba
 
 import com.example.scriba.viewmodel.NotesViewModel
 import com.example.scriba.data.NoteEntity
+import com.example.scriba.data.PreferencesManager
 import com.example.scriba.ui.theme.ScribaTheme
-
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -34,19 +35,37 @@ val sampleNotes = listOf(
 )
 
 class MainActivity : ComponentActivity() {
-    // Use the ViewModel from the viewmodel package that uses Room
     private val viewModel: NotesViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        // Create an instance of PreferencesManager
+        val preferencesManager = PreferencesManager(applicationContext)
+
         setContent {
-            ScribaTheme {
+            // Collect dark mode preference as state
+            val darkMode by preferencesManager.darkModeFlow.collectAsState(initial = false)
+            // Pass the preference to your theme
+            ScribaTheme(darkTheme = darkMode) {
                 val navController = rememberNavController()
                 NavHost(navController = navController, startDestination = ROUTE_NOTES) {
                     composable(ROUTE_NOTES) {
+                        @OptIn(ExperimentalMaterial3Api::class)
                         Scaffold(
-                            modifier = Modifier.fillMaxSize(),
+                            topBar = {
+                                TopAppBar(
+                                    title = { Text("Notes") },
+                                    actions = {
+                                        IconButton(onClick = { navController.navigate("settings") }) {
+                                            Icon(
+                                                imageVector = Icons.Default.Settings,
+                                                contentDescription = "Settings"
+                                            )
+                                        }
+                                    }
+                                )
+                            },
                             floatingActionButton = {
                                 FloatingActionButton(onClick = {
                                     navController.navigate(ROUTE_ADD)
@@ -56,7 +75,8 @@ class MainActivity : ComponentActivity() {
                                         contentDescription = "Add Note"
                                     )
                                 }
-                            }
+                            },
+                            modifier = Modifier.fillMaxSize()
                         ) { innerPadding ->
                             // Observe the LiveData from your ViewModel.
                             val notes by viewModel.notes.observeAsState(initial = emptyList())
@@ -69,9 +89,13 @@ class MainActivity : ComponentActivity() {
                                 viewModel.addNote(note.title, note.content)
                                 navController.popBackStack()
                             },
-                            onCancel = {
-                                navController.popBackStack()
-                            }
+                            onCancel = { navController.popBackStack() }
+                        )
+                    }
+                    composable("settings") {
+                        SettingsScreen(
+                            preferencesManager = preferencesManager,
+                            onBack = { navController.popBackStack() }
                         )
                     }
                 }
