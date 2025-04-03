@@ -10,6 +10,7 @@ import com.example.scriba.data.NoteEntity
 import com.example.scriba.data.NoteRepository
 import kotlinx.coroutines.launch
 
+
 class NotesViewModel(application: Application) : AndroidViewModel(application) {
     private val noteDao = NoteDatabase.getDatabase(application).noteDao()
     private val repository = NoteRepository(noteDao)

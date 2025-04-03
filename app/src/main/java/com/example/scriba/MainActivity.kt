@@ -24,6 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.*
 
+
 const val ROUTE_NOTES = "note_list"
 const val ROUTE_ADD = "add_note"
 
