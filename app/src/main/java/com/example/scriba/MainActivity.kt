@@ -1,7 +1,7 @@
 package com.example.scriba
 
 import com.example.scriba.viewmodel.NotesViewModel
-import com.example.scriba.viewmodel.Note  // Import the Note model from your viewmodel package
+import com.example.scriba.data.NoteEntity
 import com.example.scriba.ui.theme.ScribaTheme
 
 
@@ -28,13 +28,13 @@ const val ROUTE_ADD = "add_note"
 
 // Sample notes for preview purposes
 val sampleNotes = listOf(
-    Note(1, "Meeting Notes", "Discuss project timeline and goals."),
-    Note(2, "Shopping List", "Milk, Eggs, Bread, Coffee."),
-    Note(3, "Ideas", "Note-taking app with voice input and tagging.")
+    NoteEntity(1, "Meeting Notes", "Discuss project timeline and goals."),
+    NoteEntity(2, "Shopping List", "Milk, Eggs, Bread, Coffee."),
+    NoteEntity(3, "Ideas", "Note-taking app with voice input and tagging.")
 )
 
 class MainActivity : ComponentActivity() {
-    // Use the ViewModel from the viewmodel package
+    // Use the ViewModel from the viewmodel package that uses Room
     private val viewModel: NotesViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -81,7 +81,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun NoteList(notes: List<Note>, modifier: Modifier = Modifier) {
+fun NoteList(notes: List<NoteEntity>, modifier: Modifier = Modifier) {
     LazyColumn(modifier = modifier.fillMaxSize()) {
         items(notes) { note ->
             NoteCard(note)
@@ -90,7 +90,7 @@ fun NoteList(notes: List<Note>, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun NoteCard(note: Note) {
+fun NoteCard(note: NoteEntity) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -107,7 +107,7 @@ fun NoteCard(note: Note) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddNoteScreen(onSave: (Note) -> Unit, onCancel: () -> Unit) {
+fun AddNoteScreen(onSave: (NoteEntity) -> Unit, onCancel: () -> Unit) {
     var title by remember { mutableStateOf("") }
     var content by remember { mutableStateOf("") }
 
@@ -142,8 +142,7 @@ fun AddNoteScreen(onSave: (Note) -> Unit, onCancel: () -> Unit) {
             Row {
                 Button(onClick = {
                     if (title.isNotBlank() && content.isNotBlank()) {
-                        // Create a new note. ID will be assigned in the ViewModel.
-                        val newNote = Note(id = 0, title = title, content = content)
+                        val newNote = NoteEntity(id = 0, title = title, content = content)
                         onSave(newNote)
                     }
                 }) {
