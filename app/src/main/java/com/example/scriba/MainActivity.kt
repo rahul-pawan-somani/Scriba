@@ -56,7 +56,7 @@ class MainActivity : ComponentActivity() {
                         Scaffold(
                             topBar = {
                                 TopAppBar(
-                                    title = { Text("Notes") },
+                                    title = { Text("Scriba") },
                                     actions = {
                                         IconButton(onClick = { navController.navigate("settings") }) {
                                             Icon(
