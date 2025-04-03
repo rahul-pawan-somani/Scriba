@@ -1,67 +1,48 @@
 package com.example.scriba
 
+import com.example.scriba.viewmodel.NotesViewModel
+import com.example.scriba.viewmodel.Note  // Import the Note model from your viewmodel package
+import com.example.scriba.ui.theme.ScribaTheme
+
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.runtime.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.scriba.ui.theme.ScribaTheme
 import androidx.navigation.compose.*
-import android.util.Log
-import androidx.lifecycle.ViewModel
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
 
 const val ROUTE_NOTES = "note_list"
 const val ROUTE_ADD = "add_note"
 
-data class Note(
-    val id: Int,
-    val title: String,
-    val content: String
-)
-
+// Sample notes for preview purposes
 val sampleNotes = listOf(
     Note(1, "Meeting Notes", "Discuss project timeline and goals."),
     Note(2, "Shopping List", "Milk, Eggs, Bread, Coffee."),
     Note(3, "Ideas", "Note-taking app with voice input and tagging.")
 )
 
-class NotesViewModel : ViewModel() {
-    private val _notes = mutableStateListOf(
-        Note(1, "Meeting Notes", "Discuss project timeline and goals."),
-        Note(2, "Shopping List", "Milk, Eggs, Bread, Coffee."),
-        Note(3, "Ideas", "Note-taking app with voice input and tagging.")
-    )
-
-    val notes: SnapshotStateList<Note> = _notes
-
-    fun addNote(note: Note) {
-        val newId = (notes.maxOfOrNull { it.id } ?: 0) + 1
-        _notes.add(note.copy(id = newId))
-    }
-}
-
 class MainActivity : ComponentActivity() {
+    // Use the ViewModel from the viewmodel package
+    private val viewModel: NotesViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             ScribaTheme {
                 val navController = rememberNavController()
-                val viewModel = remember { NotesViewModel() }
                 NavHost(navController = navController, startDestination = ROUTE_NOTES) {
                     composable(ROUTE_NOTES) {
                         Scaffold(
@@ -77,14 +58,15 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                         ) { innerPadding ->
-                            NoteList(notes = viewModel.notes, modifier = Modifier.padding(innerPadding))
+                            // Observe the LiveData from your ViewModel.
+                            val notes by viewModel.notes.observeAsState(initial = emptyList())
+                            NoteList(notes = notes, modifier = Modifier.padding(innerPadding))
                         }
                     }
-
                     composable(ROUTE_ADD) {
                         AddNoteScreen(
                             onSave = { note ->
-                                viewModel.addNote(note)
+                                viewModel.addNote(note.title, note.content)
                                 navController.popBackStack()
                             },
                             onCancel = {
@@ -160,6 +142,7 @@ fun AddNoteScreen(onSave: (Note) -> Unit, onCancel: () -> Unit) {
             Row {
                 Button(onClick = {
                     if (title.isNotBlank() && content.isNotBlank()) {
+                        // Create a new note. ID will be assigned in the ViewModel.
                         val newNote = Note(id = 0, title = title, content = content)
                         onSave(newNote)
                     }
