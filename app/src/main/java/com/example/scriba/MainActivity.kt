@@ -13,6 +13,7 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Settings
@@ -138,7 +139,17 @@ fun AddNoteScreen(onSave: (NoteEntity) -> Unit, onCancel: () -> Unit) {
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Add Note") })
+            TopAppBar(
+                title = { Text("Add Note") },
+                navigationIcon = {
+                    IconButton(onClick = onCancel) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,  // Use ArrowBack (or AutoMirrored if available)
+                            contentDescription = "Back"
+                        )
+                    }
+                }
+            )
         }
     ) { padding ->
         Column(

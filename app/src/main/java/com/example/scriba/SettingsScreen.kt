@@ -1,16 +1,15 @@
 package com.example.scriba
 
+import com.example.scriba.data.PreferencesManager
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.scriba.data.PreferencesManager
 import kotlinx.coroutines.launch
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,16 +25,19 @@ fun SettingsScreen(
     // Local state for editing, initialize with stored values
     var userName by remember { mutableStateOf(storedUserName) }
     var userEmail by remember { mutableStateOf(storedUserEmail) }
+    // Local state for email validation error
+    var emailError by remember { mutableStateOf("") }
 
     // Update local state when the stored values change
-    LaunchedEffect(storedUserName) {
-        userName = storedUserName
-    }
-    LaunchedEffect(storedUserEmail) {
-        userEmail = storedUserEmail
-    }
+    LaunchedEffect(storedUserName) { userName = storedUserName }
+    LaunchedEffect(storedUserEmail) { userEmail = storedUserEmail }
+
+    // Define a simple email regex for validation
+    val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$".toRegex()
 
     val scope = rememberCoroutineScope()
+    // Create a SnackbarHostState to display feedback messages
+    val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
         topBar = {
@@ -44,13 +46,14 @@ fun SettingsScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -66,9 +69,7 @@ fun SettingsScreen(
                 Switch(
                     checked = darkMode,
                     onCheckedChange = { checked ->
-                        scope.launch {
-                            preferencesManager.setDarkMode(checked)
-                        }
+                        scope.launch { preferencesManager.setDarkMode(checked) }
                     }
                 )
             }
@@ -79,24 +80,39 @@ fun SettingsScreen(
                 label = { Text("User Name") },
                 modifier = Modifier.fillMaxWidth()
             )
-            // User Email Field
+            // User Email Field with validation
             OutlinedTextField(
                 value = userEmail,
-                onValueChange = { userEmail = it },
+                onValueChange = { newValue ->
+                    userEmail = newValue
+                    emailError = if (newValue.isNotEmpty() && !emailRegex.matches(newValue)) {
+                        "Invalid email address"
+                    } else {
+                        ""
+                    }
+                },
                 label = { Text("Email Address") },
+                isError = emailError.isNotEmpty(),
                 modifier = Modifier.fillMaxWidth()
             )
-            // Save Button for User Details with redirection on save
+            if (emailError.isNotEmpty()) {
+                Text(
+                    text = emailError,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+            // Save Button with Snackbar feedback; remains on settings screen
             Button(
                 onClick = {
                     scope.launch {
                         preferencesManager.setUserName(userName)
                         preferencesManager.setUserEmail(userEmail)
-                        // After saving, navigate back to the main page.
-                        onBack()
+                        snackbarHostState.showSnackbar("Settings saved")
                     }
                 },
-                modifier = Modifier.align(Alignment.End)
+                modifier = Modifier.align(Alignment.End),
+                enabled = emailError.isEmpty()
             ) {
                 Text("Save")
             }
