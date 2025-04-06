@@ -15,12 +15,17 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
     private val noteDao = NoteDatabase.getDatabase(application).noteDao()
     private val repository = NoteRepository(noteDao)
 
-    // Expose notes from Room as LiveData.
     val notes: LiveData<List<NoteEntity>> = repository.allNotes.asLiveData()
 
     fun addNote(title: String, content: String) {
         viewModelScope.launch {
             repository.insert(NoteEntity(title = title, content = content))
+        }
+    }
+
+    fun clearAllNotes() {
+        viewModelScope.launch {
+            repository.clearAllNotes()
         }
     }
 }

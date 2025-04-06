@@ -6,6 +6,10 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -15,7 +19,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun SettingsScreen(
     preferencesManager: PreferencesManager,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onClearNotes: () -> Unit // Callback for clearing all notes
 ) {
     // Collect stored preferences as state
     val darkMode by preferencesManager.darkModeFlow.collectAsState(initial = false)
@@ -38,6 +43,8 @@ fun SettingsScreen(
     val scope = rememberCoroutineScope()
     // Create a SnackbarHostState to display feedback messages
     val snackbarHostState = remember { SnackbarHostState() }
+    // State to control display of the delete confirmation dialog
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -60,36 +67,39 @@ fun SettingsScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // Dark Mode Toggle
+            // === Appearance Section ===
+            Text(text = "Appearance", style = MaterialTheme.typography.titleMedium)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(text = "Dark Mode")
                 Spacer(modifier = Modifier.weight(1f))
                 Switch(
                     checked = darkMode,
                     onCheckedChange = { checked ->
-                        scope.launch { preferencesManager.setDarkMode(checked) }
+                        scope.launch {
+                            preferencesManager.setDarkMode(checked)
+                        }
                     }
                 )
             }
-            // User Name Field
+            HorizontalDivider()
+
+            // === Profile Section ===
+            Text(text = "Profile", style = MaterialTheme.typography.titleMedium)
             OutlinedTextField(
                 value = userName,
                 onValueChange = { userName = it },
                 label = { Text("User Name") },
                 modifier = Modifier.fillMaxWidth()
             )
-            // User Email Field with validation
             OutlinedTextField(
                 value = userEmail,
                 onValueChange = { newValue ->
                     userEmail = newValue
                     emailError = if (newValue.isNotEmpty() && !emailRegex.matches(newValue)) {
                         "Invalid email address"
-                    } else {
-                        ""
-                    }
+                    } else ""
                 },
                 label = { Text("Email Address") },
                 isError = emailError.isNotEmpty(),
@@ -102,20 +112,94 @@ fun SettingsScreen(
                     style = MaterialTheme.typography.bodySmall
                 )
             }
-            // Save Button with Snackbar feedback; remains on settings screen
-            Button(
-                onClick = {
-                    scope.launch {
-                        preferencesManager.setUserName(userName)
-                        preferencesManager.setUserEmail(userEmail)
-                        snackbarHostState.showSnackbar("Settings saved")
+            // Save button placed in the Profile section
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                Button(
+                    onClick = {
+                        scope.launch {
+                            preferencesManager.setUserName(userName)
+                            preferencesManager.setUserEmail(userEmail)
+                            snackbarHostState.showSnackbar("Settings saved")
+                        }
+                    },
+                    enabled = emailError.isEmpty()
+                ) {
+                    Text("Save")
+                }
+            }
+            HorizontalDivider()
+
+            // === Actions Section ===
+            Text(text = "Actions", style = MaterialTheme.typography.titleMedium)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                OutlinedButton(
+                    onClick = { showDeleteDialog = true }
+                ) {
+                    Text("Clear All Notes")
+                }
+                OutlinedButton(
+                    onClick = {
+                        scope.launch {
+                            preferencesManager.setDarkMode(false)
+                            preferencesManager.setUserName("")
+                            preferencesManager.setUserEmail("")
+                        }
+                        userName = ""
+                        userEmail = ""
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Settings reset to defaults")
+                        }
+                    }
+                ) {
+                    Text("Reset")
+                }
+            }
+        }
+
+        // Delete Confirmation Dialog
+        if (showDeleteDialog) {
+            AlertDialog(
+                onDismissRequest = { showDeleteDialog = false },
+                title = { Text("Confirm Delete") },
+                text = {
+                    Column {
+                        Text("(This action cannot be undone)", fontWeight = FontWeight.Bold)
+                        Text(
+                            text = buildAnnotatedString {
+                                append("Are you sure you want to")
+                                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                    append(" DELETE ")
+                                }
+                                append("your all notes?")
+                            }
+                        )
                     }
                 },
-                modifier = Modifier.align(Alignment.End),
-                enabled = emailError.isEmpty()
-            ) {
-                Text("Save")
-            }
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            scope.launch {
+                                onClearNotes()
+                                snackbarHostState.showSnackbar("All notes cleared")
+                            }
+                            showDeleteDialog = false
+                        }
+                    ) {
+                        Text("Yes")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDeleteDialog = false }) {
+                        Text("No")
+                    }
+                }
+            )
         }
     }
 }

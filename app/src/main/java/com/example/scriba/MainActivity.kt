@@ -97,7 +97,8 @@ class MainActivity : ComponentActivity() {
                     composable("settings") {
                         SettingsScreen(
                             preferencesManager = preferencesManager,
-                            onBack = { navController.popBackStack() }
+                            onBack = { navController.popBackStack() },
+                            onClearNotes = { viewModel.clearAllNotes() }
                         )
                     }
                 }
