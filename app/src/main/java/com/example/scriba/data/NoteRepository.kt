@@ -1,5 +1,6 @@
 package com.example.scriba.data
 
+import android.util.Log
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -22,7 +23,14 @@ class NoteRepository(private val noteDao: NoteDao) {
      * @param note The note to be inserted.
      * @return The new row ID of the inserted note.
      */
-    suspend fun insert(note: NoteEntity): Long = noteDao.insert(note)
+    suspend fun insert(note: NoteEntity): Long {
+        return try {
+            noteDao.insert(note)
+        } catch (e: Exception) {
+            Log.e("NoteRepository", "Error inserting note", e)
+            -1L
+        }
+    }
 
     /**
      * Deletes a specific note from the database.
@@ -30,19 +38,38 @@ class NoteRepository(private val noteDao: NoteDao) {
      * @param note The note to be deleted.
      * @return The number of rows deleted.
      */
-    suspend fun delete(note: NoteEntity): Int = noteDao.delete(note)
+    suspend fun delete(note: NoteEntity): Int {
+        return try {
+            noteDao.delete(note)
+        } catch (e: Exception) {
+            Log.e("NoteRepository", "Error deleting note", e)
+            0
+        }
+    }
 
     /**
      * Updates an existing note in the database.
      *
      * @param note The note with updated information.
      */
-    suspend fun updateNote(note: NoteEntity) = noteDao.update(note)
+    suspend fun updateNote(note: NoteEntity) {
+        try {
+            noteDao.update(note)
+        } catch (e: Exception) {
+            Log.e("NoteRepository", "Error updating note", e)
+        }
+    }
 
     /**
      * Deletes all notes from the database.
      *
      * @return The number of rows deleted.
      */
-    suspend fun clearAllNotes() = noteDao.deleteAllNotes()
+    suspend fun clearAllNotes() {
+        try {
+            noteDao.deleteAllNotes()
+        } catch (e: Exception) {
+            Log.e("NoteRepository", "Error clearing notes", e)
+        }
+    }
 }

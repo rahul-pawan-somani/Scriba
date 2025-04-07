@@ -78,12 +78,26 @@ class MainActivity : ComponentActivity() {
                 NavHost(navController = navController, startDestination = ROUTE_NOTES) {
                     // Main notes list screen
                     composable(ROUTE_NOTES) {
-                        // Observe notes list from ViewModel
+                        // Existing observers for notes and view mode
                         val notes by viewModel.notes.observeAsState(initial = emptyList())
-                        // Observe view mode (grid or list) from preferences
                         val isGrid by preferencesManager.viewModeFlow.collectAsState(initial = true)
+
                         // State for search query input
                         var query by remember { mutableStateOf("") }
+
+                        // Error handling: observe error messages from the ViewModel
+                        val errorMessage by viewModel.errorMessage.observeAsState()
+                        // Create a SnackbarHostState to display error messages
+                        val snackbarHostState = remember { SnackbarHostState() }
+
+                        // Launch an effect to show a Snackbar when an error occurs
+                        LaunchedEffect(errorMessage) {
+                            errorMessage?.let { message ->
+                                snackbarHostState.showSnackbar(message)
+                                viewModel.clearError() // Clear the error after showing it
+                            }
+                        }
+
                         // Filter and sort notes based on search query and pinned status
                         val sortedNotes = notes.filter {
                             it.title.contains(query, ignoreCase = true) ||
@@ -107,7 +121,9 @@ class MainActivity : ComponentActivity() {
                                 FloatingActionButton(onClick = { navController.navigate(ROUTE_ADD) }) {
                                     Icon(Icons.Default.Add, contentDescription = "Add Note")
                                 }
-                            }
+                            },
+                            // Add the SnackbarHost to the Scaffold
+                            snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
                         ) { innerPadding ->
                             Column(
                                 modifier = Modifier
