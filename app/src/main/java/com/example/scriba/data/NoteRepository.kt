@@ -8,7 +8,7 @@ class NoteRepository(private val noteDao: NoteDao) {
 
     suspend fun insert(note: NoteEntity): Long = noteDao.insert(note)
     suspend fun delete(note: NoteEntity): Int = noteDao.delete(note)
-    suspend fun clearAllNotes() {
-        noteDao.deleteAllNotes()
-    }
+    suspend fun updateNote(note: NoteEntity) = noteDao.update(note)
+    suspend fun clearAllNotes() = noteDao.deleteAllNotes()
 }
+

@@ -34,10 +34,18 @@ android {
     }
     kotlinOptions {
         jvmTarget = "11"
-        languageVersion = "1.8" // Add this line to force Kotlin 1.8
+        languageVersion = "1.8" // Force Kotlin 1.8
     }
     buildFeatures {
         compose = true
+    }
+}
+
+kapt {
+    correctErrorTypes = true
+    arguments {
+        arg("room.incremental", "false")
+        arg("kapt.incremental.apt", "false")
     }
 }
 
@@ -55,6 +63,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.room.ktx)
