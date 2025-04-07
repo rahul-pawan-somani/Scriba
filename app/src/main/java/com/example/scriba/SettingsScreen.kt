@@ -16,7 +16,16 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
-
+/**
+ * Composable that displays the settings screen.
+ *
+ * This screen allows the user to adjust appearance settings, update profile details,
+ * and perform actions such as clearing all notes.
+ *
+ * @param preferencesManager Manager for reading and writing user preferences.
+ * @param onBack Callback to navigate back from the settings screen.
+ * @param onClearNotes Callback for clearing all notes.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
@@ -30,7 +39,7 @@ fun SettingsScreen(
     val storedUserEmail by preferencesManager.userEmailFlow.collectAsState(initial = "")
     val storedIsGrid by preferencesManager.viewModeFlow.collectAsState(initial = true)
 
-    // Local state for editing.
+    // Local state for editing profile and view mode.
     var userName by remember { mutableStateOf(storedUserName) }
     var userEmail by remember { mutableStateOf(storedUserEmail) }
     var isGrid by remember { mutableStateOf(storedIsGrid) }
@@ -41,15 +50,17 @@ fun SettingsScreen(
     LaunchedEffect(storedUserEmail) { userEmail = storedUserEmail }
     LaunchedEffect(storedIsGrid) { isGrid = storedIsGrid }
 
-    // Define email regex.
+    // Define a regular expression for validating email addresses.
     val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$".toRegex()
 
+    // Remember a coroutine scope and snackbar host state for asynchronous tasks.
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
+            // TopAppBar with title and navigation icon.
             CenterAlignedTopAppBar(
                 title = { Text("Settings") },
                 navigationIcon = {
@@ -64,6 +75,7 @@ fun SettingsScreen(
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { padding ->
+        // Main content using a LazyColumn for vertical scrolling.
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -85,6 +97,7 @@ fun SettingsScreen(
                     Switch(
                         checked = darkMode,
                         onCheckedChange = { checked ->
+                            // Update dark mode preference.
                             scope.launch { preferencesManager.setDarkMode(checked) }
                         }
                     )
@@ -137,6 +150,7 @@ fun SettingsScreen(
                     value = userEmail,
                     onValueChange = { newValue ->
                         userEmail = newValue
+                        // Validate email format.
                         emailError = if (newValue.isNotEmpty() && !emailRegex.matches(newValue)) {
                             "Invalid email address"
                         } else ""
@@ -162,6 +176,7 @@ fun SettingsScreen(
                 ) {
                     Button(
                         onClick = {
+                            // Save profile settings and show confirmation.
                             scope.launch {
                                 preferencesManager.setUserName(userName)
                                 preferencesManager.setUserEmail(userEmail)
@@ -192,6 +207,7 @@ fun SettingsScreen(
                     }
                     OutlinedButton(
                         onClick = {
+                            // Reset preferences to default values.
                             scope.launch {
                                 preferencesManager.setDarkMode(false)
                                 preferencesManager.setUserName("")
@@ -204,7 +220,7 @@ fun SettingsScreen(
                             }
                         }
                     ) {
-                        Text("Reset")
+                        Text("Reset Settings")
                     }
                 }
             }
@@ -232,6 +248,7 @@ fun SettingsScreen(
                 confirmButton = {
                     TextButton(
                         onClick = {
+                            // Confirm deletion of all notes.
                             scope.launch {
                                 onClearNotes()
                                 snackbarHostState.showSnackbar("All notes cleared")

@@ -33,35 +33,58 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.*
 
-
+/**
+ * Route constant for the notes list screen.
+ */
 const val ROUTE_NOTES = "note_list"
+
+/**
+ * Route constant for the add note screen.
+ */
 const val ROUTE_ADD = "add_note"
 
-// Sample notes for preview purposes (NoteEntity includes an isPinned field)
+/**
+ * Sample notes for preview purposes.
+ * NoteEntity includes an isPinned field.
+ */
 val sampleNotes = listOf(
     NoteEntity(1, "Meeting Notes", "Discuss project timeline and goals.", isPinned = false),
     NoteEntity(2, "Shopping List", "Milk, Eggs, Bread, Coffee.", isPinned = true),
     NoteEntity(3, "Ideas", "Note-taking app with voice input and tagging.", isPinned = false)
 )
 
+/**
+ * MainActivity: The entry point for the Scriba app.
+ * Sets up the UI, navigation, and integrates preferences and view model.
+ */
 class MainActivity : ComponentActivity() {
+    // ViewModel to manage note data
     private val viewModel: NotesViewModel by viewModels()
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Enable edge-to-edge display for immersive UI
         enableEdgeToEdge()
+        // Initialize PreferencesManager for user settings
         val preferencesManager = PreferencesManager(applicationContext)
 
         setContent {
+            // Observe dark mode setting from preferences
             val darkMode by preferencesManager.darkModeFlow.collectAsState(initial = false)
             ScribaTheme(darkTheme = darkMode) {
+                // Initialize navigation controller for composable navigation
                 val navController = rememberNavController()
                 NavHost(navController = navController, startDestination = ROUTE_NOTES) {
+                    // Main notes list screen
                     composable(ROUTE_NOTES) {
+                        // Observe notes list from ViewModel
                         val notes by viewModel.notes.observeAsState(initial = emptyList())
+                        // Observe view mode (grid or list) from preferences
                         val isGrid by preferencesManager.viewModeFlow.collectAsState(initial = true)
+                        // State for search query input
                         var query by remember { mutableStateOf("") }
+                        // Filter and sort notes based on search query and pinned status
                         val sortedNotes = notes.filter {
                             it.title.contains(query, ignoreCase = true) ||
                                     it.content.contains(query, ignoreCase = true)
@@ -72,6 +95,7 @@ class MainActivity : ComponentActivity() {
                                 CenterAlignedTopAppBar(
                                     title = { Text("Scriba") },
                                     actions = {
+                                        // Navigate to settings screen
                                         IconButton(onClick = { navController.navigate("settings") }) {
                                             Icon(Icons.Default.Settings, contentDescription = "Settings")
                                         }
@@ -79,6 +103,7 @@ class MainActivity : ComponentActivity() {
                                 )
                             },
                             floatingActionButton = {
+                                // FAB to add a new note
                                 FloatingActionButton(onClick = { navController.navigate(ROUTE_ADD) }) {
                                     Icon(Icons.Default.Add, contentDescription = "Add Note")
                                 }
@@ -89,8 +114,10 @@ class MainActivity : ComponentActivity() {
                                     .padding(innerPadding)
                                     .fillMaxSize()
                             ) {
+                                // Search bar for filtering notes
                                 SearchBar(query = query, onQueryChange = { query = it }, modifier = Modifier.fillMaxWidth())
                                 Spacer(modifier = Modifier.height(8.dp))
+                                // Display notes in grid or list view based on user preference
                                 NotesDisplay(
                                     notes = sortedNotes,
                                     isGrid = isGrid,
@@ -100,6 +127,7 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     }
+                    // Screen to add a new note
                     composable(ROUTE_ADD) {
                         AddNoteScreen(
                             onSave = { note ->
@@ -109,7 +137,9 @@ class MainActivity : ComponentActivity() {
                             onCancel = { navController.popBackStack() }
                         )
                     }
+                    // Screen to edit an existing note
                     composable("edit_note/{noteId}") { backStackEntry ->
+                        // Retrieve noteId from navigation arguments
                         val noteId = backStackEntry.arguments?.getString("noteId")?.toIntOrNull() ?: -1
                         val notesList by viewModel.notes.observeAsState(initial = emptyList())
                         val noteToEdit = notesList.find { it.id == noteId }
@@ -126,6 +156,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         } else {
+                            // Display a loading indicator if note is not found
                             Box(
                                 modifier = Modifier.fillMaxSize(),
                                 contentAlignment = Alignment.Center
@@ -134,6 +165,7 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     }
+                    // Settings screen
                     composable("settings") {
                         SettingsScreen(
                             preferencesManager = preferencesManager,
@@ -147,6 +179,15 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ * Displays notes using either a grid or list view based on [isGrid] flag.
+ *
+ * @param notes List of notes to display.
+ * @param isGrid True to display notes in a grid, false for list.
+ * @param onNoteClick Callback when a note is clicked.
+ * @param onPinToggle Callback to toggle a note's pinned status.
+ * @param modifier Modifier for layout adjustments.
+ */
 @Composable
 fun NotesDisplay(
     notes: List<NoteEntity>,
@@ -162,6 +203,14 @@ fun NotesDisplay(
     }
 }
 
+/**
+ * Displays notes in a grid layout.
+ *
+ * @param notes List of notes to display.
+ * @param onNoteClick Callback when a note is clicked.
+ * @param onPinToggle Callback to toggle a note's pinned status.
+ * @param modifier Modifier for layout adjustments.
+ */
 @Composable
 fun NoteGrid(
     notes: List<NoteEntity>,
@@ -180,6 +229,14 @@ fun NoteGrid(
     }
 }
 
+/**
+ * Displays notes in a vertical list.
+ *
+ * @param notes List of notes to display.
+ * @param onNoteClick Callback when a note is clicked.
+ * @param onPinToggle Callback to toggle a note's pinned status.
+ * @param modifier Modifier for layout adjustments.
+ */
 @Composable
 fun NoteList(
     notes: List<NoteEntity>,
@@ -194,6 +251,13 @@ fun NoteList(
     }
 }
 
+/**
+ * Displays a single note in a Card layout.
+ *
+ * @param note The note to display.
+ * @param onClick Callback when the card is clicked.
+ * @param onPinToggle Callback to toggle the pinned status of the note.
+ */
 @Composable
 fun NoteCard(
     note: NoteEntity,
@@ -237,6 +301,13 @@ fun NoteCard(
     }
 }
 
+/**
+ * A simple search bar for filtering notes.
+ *
+ * @param query The current search query.
+ * @param onQueryChange Callback when the query text changes.
+ * @param modifier Modifier for layout adjustments.
+ */
 @Composable
 fun SearchBar(
     query: String,
@@ -252,6 +323,15 @@ fun SearchBar(
     )
 }
 
+/**
+ * Form for entering note title and content.
+ *
+ * @param title Current title text.
+ * @param content Current content text.
+ * @param onTitleChange Callback when the title changes.
+ * @param onContentChange Callback when the content changes.
+ * @param modifier Modifier for layout adjustments.
+ */
 @Composable
 fun AutoNoteForm(
     title: String,
@@ -295,6 +375,12 @@ fun AutoNoteForm(
     }
 }
 
+/**
+ * Screen for adding a new note.
+ *
+ * @param onSave Callback when the note is saved.
+ * @param onCancel Callback when the operation is cancelled.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddNoteScreen(
@@ -309,6 +395,7 @@ fun AddNoteScreen(
                 title = { Text("Add Note") },
                 navigationIcon = {
                     IconButton(onClick = {
+                        // Save note if there's content; otherwise cancel
                         if (title.isNotBlank() || content.isNotBlank()) {
                             val newNote = NoteEntity(
                                 id = 0,
@@ -340,6 +427,13 @@ fun AddNoteScreen(
     }
 }
 
+/**
+ * Screen for editing an existing note.
+ *
+ * @param currentNote The note to be edited.
+ * @param onSave Callback when the note is updated.
+ * @param onDelete Callback when the note is deleted.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditNoteScreen(
@@ -355,6 +449,7 @@ fun EditNoteScreen(
                 title = { Text("Edit Note") },
                 navigationIcon = {
                     IconButton(onClick = {
+                        // Delete note if both fields are blank; otherwise save updates
                         if (title.isBlank() && content.isBlank()) {
                             onDelete(currentNote)
                         } else {
@@ -380,6 +475,9 @@ fun EditNoteScreen(
     }
 }
 
+/**
+ * Preview composable for displaying a grid of sample notes.
+ */
 @Preview(showBackground = true)
 @Composable
 fun NoteListPreview() {
