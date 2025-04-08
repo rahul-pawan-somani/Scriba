@@ -1,4 +1,4 @@
-package com.example.scriba
+package com.example.scriba.ui.notes
 
 import com.example.scriba.data.PreferencesManager
 import androidx.compose.foundation.layout.*
@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+
 
 /**
  * Composable that displays the settings screen.

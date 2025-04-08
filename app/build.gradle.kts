@@ -104,7 +104,4 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     // Use Compose BOM for implementation dependencies.
     implementation(platform(libs.androidx.compose.bom))
-
-    // Unit testing.
-    testImplementation(libs.junit)
 }

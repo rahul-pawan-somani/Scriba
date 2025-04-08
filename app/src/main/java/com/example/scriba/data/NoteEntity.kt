@@ -3,6 +3,7 @@ package com.example.scriba.data
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
+
 /**
  * Data class representing a note.
  *

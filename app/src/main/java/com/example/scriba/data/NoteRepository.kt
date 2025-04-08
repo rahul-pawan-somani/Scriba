@@ -3,6 +3,7 @@ package com.example.scriba.data
 import android.util.Log
 import kotlinx.coroutines.flow.Flow
 
+
 /**
  * Repository class that abstracts access to note data.
  *
@@ -62,8 +63,6 @@ class NoteRepository(private val noteDao: NoteDao) {
 
     /**
      * Deletes all notes from the database.
-     *
-     * @return The number of rows deleted.
      */
     suspend fun clearAllNotes() {
         try {

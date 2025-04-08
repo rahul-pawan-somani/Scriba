@@ -1,16 +1,16 @@
 package com.example.scriba.viewmodel
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.scriba.data.NoteDatabase
 import com.example.scriba.data.NoteEntity
 import com.example.scriba.data.NoteRepository
 import kotlinx.coroutines.launch
-import android.util.Log
-import androidx.lifecycle.MutableLiveData
 
 
 /**
@@ -53,7 +53,6 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
-
 
     /**
      * Updates an existing note.

@@ -8,6 +8,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
+
 // Extension property to create a DataStore instance for settings.
 val Context.dataStore by preferencesDataStore(name = "settings")
 
