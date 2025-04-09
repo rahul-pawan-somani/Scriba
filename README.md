@@ -34,7 +34,7 @@ Leveraging Jetpack Compose allows for a modern, declarative UI that is both scal
 
 2. **Cloning the Repository:**
    ```bash
-   git clone https://github.com/yourusername/scriba.git
+   git clone https://github.com/rahul-pawan-somani/Scriba.git
    cd scriba
 3. **Opening the Project:**
   - Launch Android Studio.
