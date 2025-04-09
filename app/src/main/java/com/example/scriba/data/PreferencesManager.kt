@@ -37,7 +37,7 @@ class PreferencesManager(context: Context) {
      * Defaults to false if the preference is not set.
      */
     val darkModeFlow: Flow<Boolean> = dataStore.data.map { preferences ->
-        preferences[DARK_MODE_KEY] ?: false
+        preferences[DARK_MODE_KEY] == true
     }
 
     /**
@@ -61,7 +61,7 @@ class PreferencesManager(context: Context) {
      * Defaults to true (grid view) if the preference is not set.
      */
     val viewModeFlow: Flow<Boolean> = dataStore.data.map { preferences ->
-        preferences[VIEW_MODE_KEY] ?: true  // Default to grid view
+        preferences[VIEW_MODE_KEY] != false  // Default to grid view
     }
 
     /**

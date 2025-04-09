@@ -84,6 +84,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     // Room annotation processor.
+    //noinspection KaptUsageInsteadOfKsp
     kapt(libs.androidx.room.compiler)
 
     // Core implementation dependencies.
