@@ -5,8 +5,8 @@ Welcome to Scriba, a modern note taking application developed in Kotlin for the 
 ## Table of Contents
   - [Features](#features)
   - [Design & Architecture](#design--architecture)
-  - [Setup & Running](#setup--running)
   - [Challenges & Future Improvements](#challenges--future-improvements)
+  - [Setup & Running](#setup--running)
 
 ---
 ## Features
@@ -24,6 +24,19 @@ Scriba employs the MVVM pattern for a clear separation of concerns:
   - **DataStore:** Reactively manages user preference settings.
 
 Leveraging Jetpack Compose allows for a modern, declarative UI that is both scalable and easy to maintain.
+
+---
+## Challenges & Future Improvements
+**Challenges:**
+  - Managing UI state effectively with Jetpack Compose.
+  - Ensuring stable local data persistence during configuration changes.
+  - Integrating explicit and implicit intents for smooth navigation and sharing without introducing complexity.
+
+**Future Improvements:**
+  - Cloud Synchronization: Enable note backup and multi-device access.
+  - Voice Input Integration: Add hands-free note creation for greater accessibility.
+  - Enhanced Sharing Options: Support multimedia sharing and integration with social platforms.
+  - Biometric Security: Implement fingerprint or face recognition to secure sensitive notes.
 
 ---
 ## Setup & Running
@@ -49,16 +62,3 @@ Leveraging Jetpack Compose allows for a modern, declarative UI that is both scal
    - **Sync & Rebuild:** Use File > Sync Project with Gradle Files to ensure all dependencies are up-to-date, then perform Build > Clean Project followed by Build > Rebuild Project to compile your code.
    - **Creating an Emulator:** Open Device Manager under Tools. Click the + icon to add a new device, select a device model (e.g., Pixel 7), and choose a system image with API level 34. Follow the prompts to create and launch the emulator.
    - **Running:** Once the emulator is active or an Android device is connected, click the Run button in Android Studio to install and launch Scriba.
-
----
-## Challenges & Future Improvements
-**Challenges:**
-  - Managing UI state effectively with Jetpack Compose.
-  - Ensuring stable local data persistence during configuration changes.
-  - Integrating explicit and implicit intents for smooth navigation and sharing without introducing complexity.
-
-**Future Improvements:**
-  - Cloud Synchronization: Enable note backup and multi-device access.
-  - Voice Input Integration: Add hands-free note creation for greater accessibility.
-  - Enhanced Sharing Options: Support multimedia sharing and integration with social platforms.
-  - Biometric Security: Implement fingerprint or face recognition to secure sensitive notes.
